@@ -1,6 +1,51 @@
 // SPDX-License-Identifier: BSD-2-Clause
 /*
  * Copyright (c) 2024, Nuclei - All Rights Reserved
+ *
+ * Nuclei HSM 对称加密驱动实现 (AES/SM4)
+ *
+ * 本文件实现基于 HSM Mailbox 接口的硬件加速对称加密。
+ * 支持算法：AES-128/192/256、SM4
+ * 支持模式：ECB、CBC、CTR
+ *
+ * Mailbox 接口使用示例：
+ * @code
+ *   // 1. 获取可用邮箱
+ *   int8_t mbox_num = mailbox_avaliable_linked_num();
+ *   if (mbox_num == -1) return TEE_ERROR_BUSY;
+ *
+ *   // 2. 准备命令描述符（填充算法、密钥、IV、数据地址等）
+ *   cipherdata->cmd_desc.cryp.header.opcode = SECURE_SERVICE_OPCODE_CRYP;
+ *   cipherdata->cmd_desc.cryp.input_data_addr_low = virt_to_phys(src_data);
+ *   // ... 填充其他字段
+ *
+ *   // 3. Cache Flush - 确保数据已写入物理内存
+ *   cache_operation(TEE_CACHEFLUSH, src_data, src_len);
+ *
+ *   // 4. 发送命令到 HSM
+ *   mailbox_secure_service_host_send(
+ *       (uint32_t *)(&cipherdata->cmd_desc),
+ *       SECURE_SERVICE_OPCODE_CRYP,
+ *       mbox_num);
+ *
+ *   // 5. 接收响应
+ *   uint32_t rbuf[32];
+ *   mailbox_secure_service_host_receive(rbuf, mbox_num);
+ *
+ *   // 6. 检查错误（bit 31 为错误标志）
+ *   if (rbuf[0] & BIT(31)) {
+ *       EMSG("HSM error: %x", (rbuf[0] >> 24) & 0x1F);
+ *       return TEE_ERROR_GENERIC;
+ *   }
+ *
+ *   // 7. Cache Invalidate - 确保读取 HSM 写入的数据
+ *   cache_operation(TEE_CACHEINVALIDATE, dst_buffer, dst_len);
+ * @endcode
+ *
+ * 关键注意事项：
+ * - 所有地址必须使用 virt_to_phys() 转换为物理地址
+ * - 发送前必须执行 cache flush，接收后必须执行 cache invalidate
+ * - 数据长度必须是块大小的整数倍（AES/SM4 为 16 字节）
  */
 
 #include <assert.h>

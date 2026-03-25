@@ -1,6 +1,26 @@
 // SPDX-License-Identifier: BSD-2-Clause
 /*
  * Copyright (c) 2024, Nuclei - All Rights Reserved
+ *
+ * Nuclei HSM 哈希算法驱动实现 (MD5/SHA/SM3)
+ *
+ * 本文件实现基于 HSM Mailbox 接口的硬件加速哈希运算。
+ * 支持算法：MD5、SHA1、SHA224、SHA256、SHA384、SHA512、SM3
+ *
+ * 哈希运算使用 Mailbox 接口的标准流程：
+ * 1. 准备 mailbox_hash_cmd_in_token 命令结构体
+ * 2. 设置 opcode 为 SECURE_SERVICE_OPCODE_HASH
+ * 3. 配置算法类型（SECURE_SERVICE_HASH_SHA256 等）
+ * 4. 设置输入数据物理地址和长度
+ * 5. Cache Flush 后调用 mailbox_secure_service_host_send()
+ * 6. 调用 mailbox_secure_service_host_receive() 获取结果
+ * 7. 从 rbuf[2+] 提取哈希结果（按字节序转换）
+ *
+ * 注意：哈希支持分块更新（init/update/final），通过 cmd_cfg.in_ctrl 控制：
+ * - SECURE_SERVICE_IN_INIT (1): 初始块
+ * - SECURE_SERVICE_IN_UPDATE (2): 中间块
+ * - SECURE_SERVICE_IN_END (3): 最后块
+ * - SECURE_SERVICE_IN_ALL (0): 单块模式（全部数据一次性处理）
  */
 
 #include <drvcrypt.h>
