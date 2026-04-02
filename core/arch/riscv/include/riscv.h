@@ -60,13 +60,14 @@
 #ifndef __ASSEMBLER__
 
 #ifdef CFG_SHART_FEATURE
+#define SHARTID_MASK 0x3
 static inline __noprof unsigned long read_hartid(void)
 {
 	unsigned long hartid;
 
 	asm volatile("csrr %0, 0xdc0" : "=r" (hartid));
 
-	return hartid;
+	return hartid&SHARTID_MASK;
 }
 #endif
 
