@@ -10,9 +10,10 @@
 #include <mm/core_mmu.h>
 #include <mm/core_memprot.h>
 
+#define MAILBOX_BASE       (0x8800000UL)
 void* mailbox_base;
 
-register_phys_mem(MEM_AREA_IO_SEC, NUCLEI_MAILBOX_BASE, NUCLEI_MAILBOX_SIZE);
+register_phys_mem(MEM_AREA_IO_SEC, MAILBOX_BASE, 0x4000);
 
 static TEE_Result nuclei_hsm_cryp_init(void)
 {
@@ -39,8 +40,8 @@ static TEE_Result nuclei_hsm_cryp_init(void)
 		panic();
 	}
 	/* map mailbox region */
-	mailbox_base = (void *)core_mmu_get_va(NUCLEI_MAILBOX_BASE, MEM_AREA_IO_SEC,
-		NUCLEI_MAILBOX_SIZE);
+	mailbox_base = (void *)core_mmu_get_va(MAILBOX_BASE, MEM_AREA_IO_SEC,
+		0x1000);
 
 	return TEE_SUCCESS;
 }
