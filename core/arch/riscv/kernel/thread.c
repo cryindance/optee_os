@@ -226,7 +226,7 @@ void  thread_scall_handler(struct thread_svc_regs *regs)
 	/* Restore foreign interrupts which are disabled on exception entry */
 	thread_restore_foreign_intr();
 
-	assert(sess && sess->handle_scall);
+	assert(sess && sess->handle_svc);
 
 	if (!sess->handle_svc(regs)) {
 		setup_unwind_user_mode(regs);
