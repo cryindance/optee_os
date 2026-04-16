@@ -1,5 +1,13 @@
 CFG_RV64_core ?= y
 CFG_WITH_USER_TA ?= y
+
+# Fix: 设置正确的 RISC-V 架构和 ABI，确保 TA 编译使用硬浮点 (lp64d)
+# 覆盖 riscv.mk 中的默认值 (rv64imac/lp64)，解决 libgcc 软浮点/双浮点不匹配问题
+MARCH := rv64imafdc
+MABI := lp64d
+# CFLAGS64 is used by mk/gcc.mk to resolve libgcc path via -print-libgcc-file-name.
+# Without -mabi here, gcc returns the soft-float lib64/lp64/libgcc.a causing link errors.
+CFLAGS64 += -march=$(MARCH) -mabi=$(MABI)
 $(call force,CFG_WITH_SOFTWARE_PRNG,y)
 $(call force,CFG_CORE_FFA,n)
 $(call force,CFG_CORE_DYN_SHM,y)
