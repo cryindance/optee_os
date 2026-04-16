@@ -64,6 +64,7 @@ endef
 
 # filter-out to workaround objdump warning
 version-o-cflags = $(filter-out -g3,$(core-platform-cflags) \
+			$(core-platform-cppflags) \
 			$(platform-cflags) $(cflagscore))
 # SOURCE_DATE_EPOCH defined for reproducible builds
 ifneq ($(SOURCE_DATE_EPOCH),)
