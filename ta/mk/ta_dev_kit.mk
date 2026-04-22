@@ -28,6 +28,7 @@ shlibuuid := $(SHLIBUUID)
 
 arch-bits-ta_arm32 := 32
 arch-bits-ta_arm64 := 64
+arch-bits-ta_rv64 := 64
 
 # For convenience
 ifdef CFLAGS
